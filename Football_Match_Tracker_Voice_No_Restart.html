@@ -1,0 +1,574 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no"><meta name="theme-color" content="#1a73e8"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-status-bar-style" content="default">
+<title>Football Match Tracker</title>
+<style>
+*{box-sizing:border-box}body{margin:0;background:#f5f7f9;color:#202124;font-family:Arial,sans-serif}.app{max-width:760px;margin:auto;background:#fff;min-height:100vh}
+header{padding:16px 18px;border-bottom:1px solid #ddd;position:sticky;top:0;background:#fff;z-index:10}h1{margin:0;font-size:21px}.small{font-size:12px;color:#70757a}
+.tabs{display:flex;border-bottom:1px solid #ddd;position:sticky;top:82px;background:#fff;z-index:9}.tab{flex:1;text-align:center;padding:13px 6px;font-weight:700;color:#70757a;cursor:pointer}.active{color:#202124;border-bottom:3px solid #1a73e8}
+.page{display:none}.page.active{display:block}.section{padding:16px 18px;border-bottom:1px solid #eee}
+.names{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:12px}input,select{width:100%;padding:13px;border:1px solid #dadce0;border-radius:10px;font-size:16px}
+.timerrow{display:flex;justify-content:space-between;align-items:center;margin-top:12px}.timer{font-size:28px;font-weight:700}
+button{border:0;border-radius:12px;padding:14px 9px;min-height:58px;font-size:15px;font-weight:700;cursor:pointer}.start{width:100%;margin-top:12px;background:#1a73e8;color:white}.neutral{background:#eef1f4}.danger{background:#fce8e6;color:#b31412}
+.score{display:grid;grid-template-columns:1fr 100px 1fr;text-align:center;align-items:center}.team{font-weight:700;font-size:17px;overflow-wrap:anywhere}.scoreline{font-size:42px;font-weight:800}.label{text-align:center;color:#70757a;font-size:14px}.grid2{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:10px}.stat{background:#f8f9fa;border:1px solid #e5e7eb;border-radius:14px;text-align:center;padding:10px}.stat b{font-size:28px;display:block}.stat span{font-size:12px;color:#5f6368}
+.control{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:10px}.home{background:#e8f0fe;color:#174ea6}.away{background:#fce8e6;color:#a50e0e}
+.pos{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:10px}.pos button{min-height:76px}.selected{outline:4px solid #34a853}.bar{height:14px;background:#eee;border-radius:20px;display:flex;overflow:hidden;margin:10px 0}.bh{background:#34a853}.ba{background:#ea4335}.pct{display:flex;justify-content:space-between;font-weight:700}
+.log{max-height:300px;overflow:auto}.event{display:flex;justify-content:space-between;gap:10px;padding:9px 0;border-bottom:1px solid #eee;font-size:13px}.event span:last-child{color:#70757a}
+.goalgrid{display:grid;grid-template-columns:70px 1fr;gap:8px;align-items:center;padding:12px 0;border-bottom:1px solid #eee}.goaltime{font-weight:700;text-align:right}.goalscore{font-weight:800;color:#b31412}.hint{background:#f8f9fa;border-radius:12px;padding:12px;font-size:13px;color:#5f6368}
+.google{max-width:760px;margin:auto}.google .top{padding:20px}.match{display:grid;grid-template-columns:1fr 110px 1fr;text-align:center;align-items:center}.badge{width:58px;height:58px;border-radius:50%;background:#f1f3f4;display:flex;align-items:center;justify-content:center;margin:auto auto 8px;font-weight:800;overflow:hidden}.badge img{width:100%;height:100%;object-fit:contain;display:block}.ft{font-size:12px;color:#70757a}.gscore{font-size:30px;font-weight:800;margin:4px 0}.date{font-size:12px;color:#70757a}.gstats{padding:18px}.gheads,.grow{display:grid;grid-template-columns:90px 1fr 90px;align-items:center}.gheads{font-size:12px;color:#70757a;font-weight:700;padding:12px 0}.grow{min-height:62px;border-bottom:1px solid #eee}.gval{font-size:20px;font-weight:700}.pill{background:#fce8e6;color:#b31412;padding:7px 10px;border-radius:18px;display:inline-block}.goaltitle{font-size:21px;font-weight:700;margin:22px 0 10px}
+@media(max-width:520px){.tabs{top:82px}.section{padding:14px}.grow,.gheads{grid-template-columns:70px 1fr 70px}.goalgrid{grid-template-columns:48px 1fr 90px}}
+
+.badge-settings{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:10px}
+.badge-box{background:#f8f9fa;border:1px solid #e5e7eb;border-radius:12px;padding:10px;text-align:center}
+.badge-preview{width:82px;height:82px;overflow:hidden;border-radius:50%;background:#eef1f4;display:flex;align-items:center;justify-content:center;margin:7px auto;font-weight:800;font-size:20px;overflow:hidden}
+.badge-preview img{width:100%;height:100%;object-fit:contain}
+.badge-box input[type=file]{font-size:11px;padding:5px;border:0}
+.badge-box input[type=text],.badge-box input:not([type]){font-size:12px;padding:9px;margin-top:4px}
+
+.share-area{margin-top:16px;padding:14px;border:1px solid #e5e7eb;border-radius:14px;background:#f8f9fa}
+.share-actions{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:10px}
+.share-preview{width:100%;margin-top:12px;border-radius:12px;background:#fff;display:none}
+.share-note{font-size:12px;color:#70757a;margin-top:7px}
+@media(max-width:520px){.share-actions{grid-template-columns:1fr}}
+
+.crop-modal{display:none;position:fixed;inset:0;background:rgba(0,0,0,.72);z-index:9999;padding:18px}
+.crop-card{max-width:520px;margin:25px auto;background:#fff;border-radius:18px;padding:16px}
+.crop-title{font-size:18px;font-weight:800;margin-bottom:8px}
+.crop-stage{width:min(86vw,420px);height:min(86vw,420px);margin:12px auto;background:#111;display:flex;align-items:center;justify-content:center;overflow:hidden;border-radius:14px;position:relative;touch-action:none}
+#cropImage{position:absolute;max-width:none;max-height:none;transform-origin:center center;user-select:none;-webkit-user-drag:none;cursor:grab}
+.crop-controls{display:flex;gap:10px;align-items:center}
+.crop-controls input{flex:1}
+.crop-help{font-size:12px;color:#70757a;margin:7px 0 10px}
+.crop-actions{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:12px}
+
+.simple-badge-box{cursor:pointer;text-align:center;padding:12px;min-height:170px}
+.simple-badge-box .badge-preview{margin:8px auto}
+.badge-action{font-weight:800;font-size:15px;margin-top:8px}
+.simple-badge-box:active{transform:scale(.99)}
+.share-actions button{min-height:58px}.voice-live{background:#e6f4ea!important;color:#137333!important}.voice-confirm{background:#fff8e1;border:1px solid #f9ab00;border-radius:10px;padding:9px;margin-top:8px;font-size:13px}
+</style>
+<link rel="manifest" href="manifest.json"><link rel="icon" href="icon.svg" type="image/svg+xml"></head>
+<body>
+<div class="app">
+<header><h1>Football Match Tracker</h1><div class="small">One file • mobile friendly • enter the teams for each match</div>
+<div class="names"><input id="homeName" placeholder="Home team"><input id="awayName" placeholder="Away team"></div>
+<div class="badge-settings" id="badgeSettings" style="display:none">
+  <div class="badge-box">
+    <div class="small">HOME BADGE</div>
+    <div class="badge-preview" id="homeBadgePreview">H</div>
+    <input type="file" id="homeBadgeFile" accept="image/*">
+    <input id="homeBadgeUrl" placeholder="Paste direct image URL">
+  </div>
+  <div class="badge-box">
+    <div class="small">AWAY BADGE</div>
+    <div class="badge-preview" id="awayBadgePreview">A</div>
+    <input type="file" id="awayBadgeFile" accept="image/*">
+    <input id="awayBadgeUrl" placeholder="Paste direct image URL">
+  </div>
+</div>
+
+<div class="timerrow"><div><div class="small" id="status">Ready</div><div class="timer" id="timer">00:00</div></div><button class="neutral" onclick="pause()">Pause</button> <button class="danger" onclick="finish()">FINISH</button></div>
+<button class="start" id="start" onclick="start()">START MATCH</button><section class="section" style="padding:12px 0 0;border:0"><div style="font-weight:700;margin-bottom:7px">VOICE TRACKING</div><button class="neutral" id="voiceBtn" style="width:100%" onclick="toggleVoice()">🎙️ START VOICE TRACKING</button><div class="small" id="voiceStatus" aria-live="polite" style="margin-top:7px">Voice tracking is off. Allow microphone access when prompted.</div><div class="small" style="margin-top:5px">Say, for example: “home team shot on target”, “away team corner”, or “home team goal, scorer Liam, assist Harrison”.</div></section></header>
+<div class="tabs"><div class="tab active" onclick="tab('track')">TRACK MATCH</div><div class="tab" onclick="tab('goals')">GOAL SCORERS</div><div class="tab" onclick="tab('dashboard')">DASHBOARD</div></div>
+
+<div id="track" class="page active">
+<section class="section">
+<div class="score">
+<div class="team" id="hn">Home Team</div>
+<div><div class="scoreline" id="score">0 — 0</div><div class="small">LIVE SCORE</div></div>
+<div class="team" id="an">Away Team</div>
+</div>
+</section>
+
+<section class="section">
+<div class="small">POSSESSION</div>
+<div class="pos">
+<button id="ph" class="home" onclick="poss('home')">HOME<br><span id="pht">00:00</span></button>
+<button id="pa" class="away" onclick="poss('away')">AWAY<br><span id="pat">00:00</span></button>
+</div>
+<div class="bar"><div id="bh" class="bh" style="width:50%"></div><div id="ba" class="ba" style="width:50%"></div></div>
+<div class="pct"><span id="pctpH">50.0%</span><span id="pctpA">50.0%</span></div>
+</section>
+
+<section class="section">
+<div class="small">SHOTS & GOALS</div>
+<div class="control">
+<button class="home" onclick="add('sh','Shot','home')">HOME<br>SHOT +1</button>
+<button class="away" onclick="add('sa','Shot','away')">AWAY<br>SHOT +1</button>
+</div>
+<div class="control">
+<button class="home" onclick="add('soth','Shot on target','home')">HOME<br>SHOT ON TARGET +1</button>
+<button class="away" onclick="add('sota','Shot on target','away')">AWAY<br>SHOT ON TARGET +1</button>
+</div>
+<div class="control">
+<button class="home" onclick="goal('home')">HOME<br>GOAL +1</button>
+<button class="away" onclick="goal('away')">AWAY<br>GOAL +1</button>
+</div>
+<div style="margin-top:10px"><input id="scorer" placeholder="Optional scorer name"></div>
+</section>
+
+<section class="section">
+<div class="small">CORNERS</div>
+<div class="control">
+<button class="home" onclick="add('ch','Corner','home')">HOME<br>CORNER +1</button>
+<button class="away" onclick="add('ca','Corner','away')">AWAY<br>CORNER +1</button>
+</div>
+</section>
+
+<section class="section">
+<div class="small">DISCIPLINE & FOULS</div>
+<div class="control">
+<button class="home" onclick="add('yh','Yellow card','home')">HOME<br>YELLOW +1</button>
+<button class="away" onclick="add('ya','Yellow card','away')">AWAY<br>YELLOW +1</button>
+</div>
+<div class="control">
+<button class="home" onclick="add('rh','Red card','home')">HOME<br>RED +1</button>
+<button class="away" onclick="add('ra','Red card','away')">AWAY<br>RED +1</button>
+</div>
+<div class="control">
+<button class="home" onclick="add('fh','Foul','home')">HOME<br>FOUL +1</button>
+<button class="away" onclick="add('fa','Foul','away')">AWAY<br>FOUL +1</button>
+</div>
+</section>
+
+<section class="section">
+<div class="small">LIVE STATS</div>
+<div class="grid2">
+<div class="stat"><b id="sh">0</b><span id="shl">Home shots</span></div><div class="stat"><b id="sa">0</b><span id="sal">Away shots</span></div>
+<div class="stat"><b id="soth">0</b><span>Shots on target</span></div><div class="stat"><b id="sota">0</b><span>Shots on target</span></div>
+<div class="stat"><b id="ch">0</b><span>Corners</span></div><div class="stat"><b id="ca">0</b><span>Corners</span></div>
+<div class="stat"><b id="yh">0</b><span>Yellow cards</span></div><div class="stat"><b id="ya">0</b><span>Yellow cards</span></div>
+<div class="stat"><b id="rh">0</b><span>Red cards</span></div><div class="stat"><b id="ra">0</b><span>Red cards</span></div>
+<div class="stat"><b id="fh">0</b><span>Fouls</span></div><div class="stat"><b id="fa">0</b><span>Fouls</span></div>
+</div>
+</section>
+
+<section class="section">
+<div class="small">MATCH LOG</div><div id="log" class="log"><div class="event"><span>No events yet</span><span>—</span></div></div>
+<div class="control"><button class="neutral" onclick="undo()">UNDO LAST</button><button class="danger" onclick="reset()">RESET</button></div>
+</section>
+<footer class="section"><button class="start" onclick="downloadCSV()">DOWNLOAD CSV</button></footer>
+</div>
+
+<div id="goals" class="page">
+<section class="section"><h2>Goal Scorers</h2><div class="hint">The goal times are already recorded. Add the scorer after the match without having to type names during the game.</div><div id="goalList" style="margin-top:10px"></div></section>
+</div>
+
+
+<div id="dashboard" class="page">
+<div class="share-area" id="shareArea">
+  <button class="start" id="createShareBtn" onclick="openShareCreator()" style="display:none">ADD TEAM BADGES</button>
+  <div id="shareCreator" style="display:none">
+    <div style="font-weight:700;font-size:18px">Create match image</div>
+    <div class="share-note">Tap either badge box and choose the badge image from your phone. A screenshot works too.</div>
+    <div class="badge-settings" id="postMatchBadges">
+  <div class="badge-box simple-badge-box" onclick="document.getElementById('homeBadgeFilePost').click()">
+    <div class="small">HOME TEAM</div>
+    <div class="badge-preview" id="homeBadgePreviewPost">+</div>
+    <div class="badge-action">ADD TEAM BADGE</div>
+    <input type="file" id="homeBadgeFilePost" accept="image/*" hidden>
+  </div>
+  <div class="badge-box simple-badge-box" onclick="document.getElementById('awayBadgeFilePost').click()">
+    <div class="small">AWAY TEAM</div>
+    <div class="badge-preview" id="awayBadgePreviewPost">+</div>
+    <div class="badge-action">ADD TEAM BADGE</div>
+    <input type="file" id="awayBadgeFilePost" accept="image/*" hidden>
+  </div>
+</div>
+<div class="share-actions">
+  <button class="neutral" onclick="previewShareImage()">PREVIEW</button>
+  <button class="start" onclick="shareGeneratedImage()">SHARE STATS</button>
+</div>
+      <button class="neutral" onclick="generateShareImage()">PREVIEW</button>
+      <button class="start" onclick="shareGeneratedImage()">SHARE IMAGE</button>
+    </div>
+    <div class="share-note">If sharing is not available on the phone/browser, the generated image will download instead.</div>
+    <img id="sharePreview" class="share-preview" alt="Generated match image">
+  </div>
+</div>
+
+<div class="google"><div class="top"><div class="small" id="dashComp">Match stats</div><div class="match">
+<div class="team"><div class="badge" id="db1">H</div><span id="dbHome">Home Team</span><div id="homeScorers" style="font-size:11px;line-height:1.4;margin-top:7px"></div></div>
+<div><div class="ft">Full-time</div><div class="gscore" id="dbScore">0 — 0</div><div class="date" id="dbDate"></div></div>
+<div class="team"><div class="badge" id="db2">A</div><span id="dbAway">Away Team</span><div id="awayScorers" style="font-size:11px;line-height:1.4;margin-top:7px"></div></div></div></div>
+<div class="gstats"><h2>Match stats</h2><div class="gheads"><div id="gh">Home</div><div></div><div id="ga" style="text-align:right">Away</div></div>
+<div class="grow"><div class="gval" id="dsh">0</div><div class="label">Shots</div><div class="gval" id="dsa">0</div></div>
+<div class="grow"><div class="gval" id="dsoth">0</div><div class="label">Shots on target</div><div class="gval" id="dsota">0</div></div>
+<div class="grow"><div class="gval"><span class="pill" id="dph">50.0%</span></div><div class="label">Possession</div><div class="gval" id="dpa">50.0%</div></div>
+<div class="grow"><div class="gval" id="dch">0</div><div class="label">Corners</div><div class="gval" id="dca">0</div></div>
+<div class="grow"><div class="gval" id="dyh">0</div><div class="label">Yellow cards</div><div class="gval" id="dya">0</div></div>
+<div class="grow"><div class="gval" id="drh">0</div><div class="label">Red cards</div><div class="gval" id="dra">0</div></div>
+<div class="grow"><div class="gval" id="dfh">0</div><div class="label">Fouls</div><div class="gval" id="dfa">0</div></div>
+<div class="grow"><div class="gval"><span class="pill" id="dgh">0</span></div><div class="label">Goals</div><div class="gval" id="dga">0</div></div>
+<div class="goaltitle">Goal timeline</div><div id="dashGoals"></div></div></div>
+</div>
+</div>
+
+<script>
+
+const BADGE_KEY='football_tracker_badges_v1';
+let badges={"home":"","away":""};
+function saveBadges(){localStorage.setItem(BADGE_KEY,JSON.stringify(badges));renderBadges()}
+function clearBadge(side){badges[side]='';localStorage.setItem(BADGE_KEY,JSON.stringify(badges));renderBadges();renderPostBadges()}
+function renderBadges(){
+  const hp=$('homeBadgePreview'), ap=$('awayBadgePreview'), d1=$('db1'), d2=$('db2');
+  const set=(el,src,letter)=>{
+    if(src){el.innerHTML='<img src="'+escAttr(src)+'" alt="">';}
+    else el.textContent=letter;
+  };
+  set(hp,badges.home,(H()[0]||'H').toUpperCase());
+  set(ap,badges.away,(A()[0]||'A').toUpperCase());
+  set(d1,badges.home,(H()[0]||'H').toUpperCase());
+  set(d2,badges.away,(A()[0]||'A').toUpperCase());
+}
+function escAttr(x){return String(x).replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;').replace(/>/g,'&gt;')}
+function badgeFile(input,side){
+  const f=input.files&&input.files[0]; if(!f)return;
+  const reader=new FileReader();
+  reader.onload=e=>{badges[side]=e.target.result;saveBadges()};
+  reader.readAsDataURL(f);
+}
+function badgeUrl(side){
+  const v=$(side+'BadgeUrl').value.trim();
+  if(v){badges[side]=v;saveBadges()}
+}
+let S={running:false,paused:false,start:0,elapsed:0,stats:{sh:0,sa:0,soth:0,sota:0,ch:0,ca:0,yh:0,ya:0,rh:0,ra:0,fh:0,fa:0,gh:0,ga:0},events:[],pos:{home:0,away:0},last:null};
+let timer=null,posStart=0;
+const $=id=>document.getElementById(id);
+const SAVE_KEY='football_tracker_match_autosave_v2';
+let recognition=null, voiceWanted=false, voiceRestartTimer=null, lastVoiceCommand='';
+let saveTimer=null;
+function saveMatch(){
+  clearTimeout(saveTimer);
+  saveTimer=setTimeout(()=>{
+    try{
+      const snapshot={S,homeName:$('homeName').value,awayName:$('awayName').value,badges,
+        status:$('status').textContent, savedAt:Date.now()};
+      localStorage.setItem(SAVE_KEY,JSON.stringify(snapshot));
+    }catch(e){$('voiceStatus').textContent='Auto-save unavailable on this browser/device.'}
+  },250);
+}
+function restoreMatch(){
+  try{
+    const raw=localStorage.getItem(SAVE_KEY); if(!raw)return;
+    const d=JSON.parse(raw); if(!d||!d.S||!d.S.stats||!Array.isArray(d.S.events))return;
+    if(!confirm('A saved match was found. Restore it? Choose Cancel to start fresh.'))return;
+    S=d.S; S.running=false; S.paused=!!(d.S.running||d.S.paused);
+    S.start=0;
+    $('homeName').value=d.homeName||''; $('awayName').value=d.awayName||'';
+    if(d.badges)badges=d.badges;
+    $('status').textContent=S.paused?'Restored — paused':'Ready';
+    $('start').disabled=false; $('start').textContent=S.elapsed?'RESUME MATCH':'START MATCH';
+    names(); renderLog(); renderGoals(); update();
+    if(S.events.length) $('log').scrollTop=0;
+  }catch(e){}
+}
+function saveNow(){
+  try{localStorage.setItem(SAVE_KEY,JSON.stringify({S,homeName:$('homeName').value,awayName:$('awayName').value,badges,savedAt:Date.now()}))}catch(e){}
+}
+window.addEventListener('beforeunload',saveNow);
+document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='hidden')saveNow()});
+
+$('homeBadgeFile').addEventListener('change',()=>badgeFile($('homeBadgeFile'),'home'));
+$('awayBadgeFile').addEventListener('change',()=>badgeFile($('awayBadgeFile'),'away'));
+$('homeBadgeUrl').addEventListener('change',()=>badgeUrl('home'));
+$('awayBadgeUrl').addEventListener('change',()=>badgeUrl('away'));
+
+function H(){return $('homeName').value.trim()||'Home Team'} function A(){return $('awayName').value.trim()||'Away Team'}
+function fmt(x){x=Math.floor(Math.max(0,x));return String(Math.floor(x/60)).padStart(2,'0')+':'+String(x%60).padStart(2,'0')}
+function secs(){return S.running?(Date.now()-S.start)/1000:S.elapsed}
+function mt(){let x=Math.floor(secs());return Math.floor(x/60)+':'+String(x%60).padStart(2,'0')}
+function names(){ $('hn').textContent=H();$('an').textContent=A();$('shl').textContent=H()+' shots';$('sal').textContent=A()+' shots';$('gh').textContent=H();$('ga').textContent=A();$('dbHome').textContent=H();$('dbAway').textContent=A();$('db1').textContent=H()[0]||'H';$('db2').textContent=A()[0]||'A';renderBadges();$('dashComp').textContent=H()+' · Match stats';}
+$('homeName').oninput=()=>{names();saveMatch()};$('awayName').oninput=()=>{names();saveMatch()};
+function start(){if(S.running)return;names();S.running=true;S.paused=false;S.start=Date.now()-S.elapsed*1000;$('start').textContent='MATCH RUNNING';$('start').disabled=true;$('status').textContent='Live';timer=setInterval(update,250);log('Match started')}
+function finish(){
+if(!S.running){alert('Press START MATCH first.');return}
+if(!confirm('Finish this match? You can still review the results and goal scorers.'))return;
+if(S.last){let t=Date.now()/1000;S.pos[S.last]+=Math.max(0,t-posStart);S.last=null}
+if(!S.paused)S.elapsed=(Date.now()-S.start)/1000;S.running=false;S.paused=true;clearInterval(timer);
+$('status').textContent='Finished';$('start').textContent='MATCH FINISHED';$('start').disabled=true;saveNow();
+$('createShareBtn').style.display='block';$('createShareBtn').textContent='ADD TEAM BADGES';
+update();renderGoals();tabById('dashboard');
+}
+function pause(){if(!S.running)return;if(!S.paused){S.elapsed=(Date.now()-S.start)/1000;if(S.last){let t=Date.now()/1000;S.pos[S.last]+=Math.max(0,t-posStart)}S.paused=true;clearInterval(timer);$('status').textContent='Paused'}else{S.start=Date.now()-S.elapsed*1000;S.paused=false;if(S.last)posStart=Date.now()/1000;$('status').textContent='Live';timer=setInterval(update,250)}update()}
+function add(id,type,side){if(!S.running){alert('Press START MATCH first.');return}S.stats[id]++;if(type==='Shot on target'){if(side==='home')S.stats.sh++;else S.stats.sa++;}log(type+' — '+(side==='home'?H():A()));update()}
+function goal(side){
+if(!S.running){alert('Press START MATCH first.');return}
+if(side==='home'){S.stats.gh++;S.stats.sh++;S.stats.soth++}
+else{S.stats.ga++;S.stats.sa++;S.stats.sota++}
+let sc=$('scorer').value.trim();
+S.events.push({time:mt(),text:'GOAL — '+(side==='home'?H():A())+(sc?' — '+sc:''),kind:'goal',side,scorer:sc,assist:''});renderLog();saveNow();
+$('scorer').value='';update();renderGoals()
+}
+function poss(side){if(!S.running){alert('Press START MATCH first.');return}if(S.paused)return;let t=Date.now()/1000;if(S.last)S.pos[S.last]+=Math.max(0,t-posStart);S.last=side;posStart=t;$('ph').classList.toggle('selected',side==='home');$('pa').classList.toggle('selected',side==='away');log('Possession — '+(side==='home'?H():A()));update()}
+function log(text){S.events.push({time:mt(),text});renderLog();saveMatch()}
+function renderLog(){$('log').innerHTML=S.events.length?S.events.slice().reverse().map(e=>'<div class="event"><strong>'+esc(e.text)+'</strong><span>'+e.time+'</span></div>').join(''):'<div class="event"><span>No events yet</span><span>—</span></div>'}
+function esc(x){return x.replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[m]))}
+function undo(){if(!S.events.length)return;S.events.pop();S.stats={sh:0,sa:0,soth:0,sota:0,ch:0,ca:0,yh:0,ya:0,rh:0,ra:0,fh:0,fa:0,gh:0,ga:0};S.events.forEach(e=>{let t=e.text;if(t==='Shot — '+H())S.stats.sh++;
+if(t==='Shot — '+A())S.stats.sa++;
+if(t==='Shot on target — '+H())S.stats.soth++;
+if(t==='Shot on target — '+A())S.stats.sota++;
+if(t.startsWith('GOAL — '+H())){S.stats.gh++;S.stats.sh++;S.stats.soth++}
+if(t.startsWith('GOAL — '+A())){S.stats.ga++;S.stats.sa++;S.stats.sota++}
+if(t==='Corner — '+H())S.stats.ch++;
+if(t==='Corner — '+A())S.stats.ca++;
+if(t==='Yellow card — '+H())S.stats.yh++;if(t==='Yellow card — '+A())S.stats.ya++;
+if(t==='Red card — '+H())S.stats.rh++;if(t==='Red card — '+A())S.stats.ra++;
+if(t==='Foul — '+H())S.stats.fh++;if(t==='Foul — '+A())S.stats.fa++;
+if(t.startsWith('GOAL — '+H()))S.stats.gh++;if(t.startsWith('GOAL — '+A()))S.stats.ga++});renderLog();renderGoals();update()}
+function reset(){if(confirm('Reset this match?')){localStorage.removeItem(SAVE_KEY);location.reload()}}
+function currentPos(){let h=S.pos.home,a=S.pos.away;if(S.last&&!S.paused){let x=Date.now()/1000-posStart;if(S.last==='home')h+=Math.max(0,x);else a+=Math.max(0,x)}return[h,a]}
+function update(){if(S.running&&!S.paused)S.elapsed=(Date.now()-S.start)/1000;$('timer').textContent=fmt(S.elapsed);$('score').textContent=S.stats.gh+' — '+S.stats.ga;['sh','sa','soth','sota','ch','ca','yh','ya','rh','ra','fh','fa'].forEach(i=>$(i).textContent=S.stats[i]);let [h,a]=currentPos(),t=h+a,ph=t?h/t*100:50,pa=100-ph;$('pht').textContent=fmt(h);$('pat').textContent=fmt(a);$('pctpH').textContent=ph.toFixed(1)+'%';$('pctpA').textContent=pa.toFixed(1)+'%';$('bh').style.width=ph+'%';$('ba').style.width=pa+'%';renderDash(ph,pa);saveMatch()}
+function renderDash(ph,pa){$('dbScore').textContent=S.stats.gh+' — '+S.stats.ga;$('dbDate').textContent=new Date().toLocaleDateString();$('dsh').textContent=S.stats.sh;$('dsa').textContent=S.stats.sa;$('dsoth').textContent=S.stats.soth;$('dsota').textContent=S.stats.sota;$('dph').textContent=ph.toFixed(1)+'%';$('dpa').textContent=pa.toFixed(1)+'%';$('dch').textContent=S.stats.ch;$('dca').textContent=S.stats.ca;$('dyh').textContent=S.stats.yh;$('dya').textContent=S.stats.ya;$('drh').textContent=S.stats.rh;$('dra').textContent=S.stats.ra;$('dfh').textContent=S.stats.fh;$('dfa').textContent=S.stats.fa;$('dgh').textContent=S.stats.gh;$('dga').textContent=S.stats.ga;renderDashGoals()}
+function goalEvents(){return S.events.filter(e=>e.text.startsWith('GOAL — '))}
+function renderGoals(){let g=goalEvents();$('goalList').innerHTML=g.length?g.map((e,i)=>{let parts=e.text.split(' — '),team=parts[1],sc=e.scorer||parts.slice(2).filter(x=>!x.startsWith('Assist:')).join(' — ')||'';return `<div class="goalgrid"><div class="goalscore">0-${i+1}</div><div><input value="${esc(sc)}" placeholder="Scorer name" onchange="setScorer(${S.events.indexOf(e)},this.value)"><div class="small">${esc(team)}</div></div><div class="goaltime">${e.time}</div></div>`}).join(''):'<div class="hint">Goals recorded during the match will appear here.</div>'}
+function setScorer(index,name){let e=S.events[index];let p=e.text.split(' — ');let assist=e.assist||(p.find(x=>x.startsWith('Assist:'))||'').replace('Assist: ','');e.scorer=name.trim();e.assist=assist;e.text=p.slice(0,2).join(' — ')+(name.trim()?' — '+name.trim():'')+(assist?' — Assist: '+assist:'');renderLog();renderGoals();renderDashGoals();saveNow()}
+function renderDashGoals(){
+let g=goalEvents();
+$('dashGoals').innerHTML=g.map(e=>{let p=e.text.split(' — '),sc=e.scorer||p.slice(2).filter(x=>!x.startsWith('Assist:')).join(' — '),as=e.assist||(p.find(x=>x.startsWith('Assist:'))||'').replace('Assist: ','');return `<div class="goalgrid"><div class="goaltime">${e.time}</div><div><strong>${esc(sc||'Goal')}</strong>${as?`<div class="small">Assist: ${esc(as)}</div>`:''}<div class="small">${esc(p[1])}</div></div></div>`}).join('');
+let scorers=g.map(e=>{let p=e.text.split(' — ');return {team:p[1],name:e.scorer||p.slice(2).filter(x=>!x.startsWith('Assist:')).join(' — '),assist:e.assist||(p.find(x=>x.startsWith('Assist:'))||'').replace('Assist: ',''),time:e.time}}).filter(x=>x.team);
+let hs=scorers.filter(x=>x.team===H()), as=scorers.filter(x=>x.team===A());
+$('homeScorers').innerHTML=hs.map(x=>`<div>⚽ ${esc(x.name||'Goal')} <span style="color:#70757a">${x.time}</span>${x.assist?`<div class="small">Assist: ${esc(x.assist)}</div>`:''}</div>`).join('');
+$('awayScorers').innerHTML=as.map(x=>`<div>⚽ ${esc(x.name||'Goal')} <span style="color:#70757a">${x.time}</span>${x.assist?`<div class="small">Assist: ${esc(x.assist)}</div>`:''}</div>`).join('');
+}
+function tab(id){document.querySelectorAll('.page').forEach(x=>x.classList.remove('active'));$(id).classList.add('active');document.querySelectorAll('.tab').forEach(x=>x.classList.remove('active'));event.currentTarget.classList.add('active');update()}
+function tabById(id){document.querySelectorAll('.page').forEach(x=>x.classList.remove('active'));$(id).classList.add('active');document.querySelectorAll('.tab').forEach(x=>x.classList.remove('active'));let t=[...document.querySelectorAll('.tab')].find(x=>x.textContent.trim()==='DASHBOARD');if(t)t.classList.add('active');update()}
+function finalise(){if(S.last){if(!S.paused){let t=Date.now()/1000;S.pos[S.last]+=Math.max(0,t-posStart)}S.last=null}}
+
+function openShareCreator(){
+  if(S.running){alert('Finish the match first.');return}
+  $('shareCreator').style.display='block';
+  $('badgeSettings').style.display='none';
+  renderPostBadges();
+}
+function renderPostBadges(){
+  const set=(el,src,letter)=>{
+    if(src){el.innerHTML='<img src="'+escAttr(src)+'" alt="">';}
+    else el.textContent=letter;
+  };
+  set($('homeBadgePreviewPost'),badges.home,(H()[0]||'H').toUpperCase());
+  set($('awayBadgePreviewPost'),badges.away,(A()[0]||'A').toUpperCase());
+}
+
+function savePostBadgeFile(input,side){
+  const f=input.files&&input.files[0]; if(!f)return;
+  const reader=new FileReader();
+  reader.onload=e=>{badges[side]=e.target.result;saveBadges();renderPostBadges()};
+  reader.readAsDataURL(f);
+}
+function savePostBadgeUrl(side){
+  const v=$(side+'BadgeUrlPost').value.trim();
+  if(v){badges[side]=v;saveBadges();renderPostBadges()}
+}
+function drawRoundImage(ctx,img,x,y,w,h){
+  try{ctx.drawImage(img,x,y,w,h);return true}catch(e){return false}
+}
+function loadBadge(src){
+  return new Promise(resolve=>{
+    if(!src)return resolve(null);
+    const img=new Image();
+    if(/^https?:/i.test(src)) img.crossOrigin='anonymous';
+    img.onload=()=>resolve(img);
+    img.onerror=()=>resolve(null);
+    img.src=src;
+  });
+}
+async function generateShareImage(){
+  finalise();update();
+  const canvas=document.createElement('canvas'), W=1200, Hc=1500;
+  canvas.width=W; canvas.height=Hc;
+  const ctx=canvas.getContext('2d');
+  ctx.fillStyle='#fff';ctx.fillRect(0,0,W,Hc);
+
+  ctx.fillStyle='#5f6368';ctx.font='28px Arial';ctx.textAlign='left';
+  ctx.fillText(H()+' · Matchday',60,62);
+  ctx.fillText(new Date().toLocaleDateString('en-GB'),60,100);
+
+  const homeBadge=await loadBadge(badges.home), awayBadge=await loadBadge(badges.away);
+  const drawBadge=(img,cx,cy)=>{
+    if(img){
+      const box=150, r=box/2;
+      ctx.save();ctx.beginPath();ctx.arc(cx,cy,r,0,Math.PI*2);ctx.clip();
+      const scale=Math.min(box/img.width,box/img.height);
+      const w=img.width*scale,h=img.height*scale;
+      ctx.drawImage(img,cx-w/2,cy-h/2,w,h);
+      ctx.restore();
+    }else{
+      ctx.fillStyle='#f1f3f4';ctx.beginPath();ctx.arc(cx,cy,75,0,Math.PI*2);ctx.fill();
+      ctx.fillStyle='#202124';ctx.font='bold 62px Arial';ctx.textAlign='center';
+      ctx.fillText((cx<W/2?H():A())[0]?.toUpperCase()||'?',cx,cy+21);
+    }
+  };
+
+  // Badges above names, with a dedicated central score column.
+  drawBadge(homeBadge,220,175);
+  drawBadge(awayBadge,980,175);
+
+  ctx.fillStyle='#202124';ctx.font='bold 52px Arial';ctx.textAlign='center';
+  ctx.fillText(H(),220,285);ctx.fillText(A(),980,285);
+
+  ctx.font='bold 82px Arial';ctx.fillText(S.stats.gh+' — '+S.stats.ga,W/2,205);
+  ctx.fillStyle='#5f6368';ctx.font='28px Arial';ctx.fillText('Full-time',W/2,250);
+
+  // Goal scorers sit under their own team.
+  const goals=goalEvents();
+  const hg=goals.filter(e=>e.text.split(' — ')[1]===H());
+  const ag=goals.filter(e=>e.text.split(' — ')[1]===A());
+  const drawGoals=(arr,x)=>{
+    ctx.textAlign='center';ctx.fillStyle='#202124';ctx.font='27px Arial';
+    arr.forEach((e,i)=>{
+      const p=e.text.split(' — '), name=p.slice(2).join(' — ')||'Goal';
+      ctx.fillText('⚽ '+name+' '+e.time,x,330+i*38);
+    });
+  };
+  drawGoals(hg,220); drawGoals(ag,980);
+
+  const maxGoals=Math.max(hg.length,ag.length);
+  const statsY=Math.max(430,350+maxGoals*38);
+  ctx.fillStyle='#202124';ctx.font='bold 34px Arial';ctx.textAlign='left';
+  ctx.fillText('Match stats',60,statsY);
+
+  const rows=[
+    ['Shots',S.stats.sh,S.stats.sa],
+    ['Shots on target',S.stats.soth,S.stats.sota],
+    ['Possession',document.getElementById('dph').textContent,document.getElementById('dpa').textContent],
+    ['Corners',S.stats.ch,S.stats.ca],
+    ['Goals',S.stats.gh,S.stats.ga],
+    ['Fouls',S.stats.fh,S.stats.fa],
+    ['Yellow cards',S.stats.yh,S.stats.ya],
+    ['Red cards',S.stats.rh,S.stats.ra]
+  ];
+  let y=statsY+55;
+  rows.forEach(r=>{
+    ctx.strokeStyle='#e8eaed';ctx.lineWidth=1;ctx.beginPath();ctx.moveTo(60,y+18);ctx.lineTo(W-60,y+18);ctx.stroke();
+    ctx.fillStyle='#c5221f';ctx.font='bold 30px Arial';ctx.textAlign='left';ctx.fillText(String(r[1]),75,y);
+    ctx.fillStyle='#5f6368';ctx.font='28px Arial';ctx.textAlign='center';ctx.fillText(r[0],W/2,y);
+    ctx.fillStyle='#202124';ctx.font='bold 30px Arial';ctx.textAlign='right';ctx.fillText(String(r[2]),W-75,y);
+    y+=58;
+  });
+  ctx.textAlign='left';
+  const data=canvas.toDataURL('image/png');
+  $('sharePreview').src=data;$('sharePreview').style.display='block';
+  window.generatedShareBlob=await new Promise(res=>canvas.toBlob(res,'image/png'));
+  window.generatedShareData=data;
+}
+async function shareGeneratedImage(){
+  if(!window.generatedShareBlob){await generateShareImage()}
+  const file=new File([window.generatedShareBlob],'match-report.png',{type:'image/png'});
+  if(navigator.share && navigator.canShare && navigator.canShare({files:[file]})){
+    try{await navigator.share({title:H()+' vs '+A(),text:H()+' '+S.stats.gh+' — '+S.stats.ga+' '+A(),files:[file]});return}catch(e){}
+  }
+  const a=document.createElement('a');a.href=URL.createObjectURL(window.generatedShareBlob);a.download='match-report.png';a.click();
+}
+$('homeBadgeFilePost').addEventListener('change',e=>savePostBadgeFile(e.target,'home'));
+$('awayBadgeFilePost').addEventListener('change',e=>savePostBadgeFile(e.target,'away'));
+function downloadCSV(){finalise();update();let [h,a]=currentPos(),t=h+a,rows=[['MATCH DATA'],['Home team',H()],['Away team',A()],['Date',new Date().toLocaleDateString()],[],['STAT',H(),A()],['Goals',S.stats.gh,S.stats.ga],['Shots',S.stats.sh,S.stats.sa],['Shots on target',S.stats.soth,S.stats.sota],['Corners',S.stats.ch,S.stats.ca],['Yellow cards',S.stats.yh,S.stats.ya],['Red cards',S.stats.rh,S.stats.ra],['Fouls',S.stats.fh,S.stats.fa],['Possession %',t?(h/t*100).toFixed(1):50,t?(a/t*100).toFixed(1):50],[],['EVENT','MATCH TIME']];S.events.forEach(e=>rows.push([e.text,e.time]));let csv=rows.map(r=>r.map(x=>'"'+String(x).replace(/"/g,'""')+'"').join(',')).join('\\n');let b=new Blob([csv],{type:'text/csv'}),a1=document.createElement('a');a1.href=URL.createObjectURL(b);a1.download='Match_Data.csv';a1.click()}
+
+function setVoiceStatus(text, live=false){
+  const el=$('voiceStatus'); if(!el)return;
+  el.textContent=text; $('voiceBtn').classList.toggle('voice-live',live);
+  $('voiceBtn').textContent=live?'🟢 VOICE TRACKING ON — TAP TO STOP':'🎙️ START VOICE TRACKING';
+}
+function toggleVoice(){
+  if(voiceWanted){stopVoice();return}
+  const SR=window.SpeechRecognition||window.webkitSpeechRecognition;
+  if(!SR){setVoiceStatus('Voice recognition is not supported in this browser. Try Chrome on Android or Safari on a supported iPhone/iPad.');return}
+  voiceWanted=true;
+  recognition=new SR(); recognition.continuous=true; recognition.interimResults=false; recognition.lang='en-GB';
+  recognition.onstart=()=>setVoiceStatus('Listening… speak a command. Voice recognition may restart after pauses.',true);
+  recognition.onresult=e=>{
+    for(let i=e.resultIndex;i<e.results.length;i++){
+      if(!e.results[i].isFinal)continue;
+      const transcript=e.results[i][0].transcript.trim();
+      if(!transcript)continue;
+      lastVoiceCommand=transcript;
+      handleVoiceCommand(transcript);
+    }
+  };
+  recognition.onerror=e=>{
+    if(e.error==='not-allowed'||e.error==='service-not-allowed'){
+      voiceWanted=false;setVoiceStatus('Microphone permission was denied. Allow microphone access in browser settings, then try again.');
+    } else if(e.error==='audio-capture'){
+      setVoiceStatus('No microphone detected. Check your wireless headset/microphone connection.');
+    } else if(e.error!=='no-speech'&&e.error!=='aborted'){
+      setVoiceStatus('Voice recognition issue ('+e.error+'). Trying to reconnect if possible.',true);
+    }
+  };
+  recognition.onend=()=>{
+    if(voiceWanted){
+      clearTimeout(voiceRestartTimer);
+      voiceRestartTimer=setTimeout(()=>{try{recognition&&recognition.start()}catch(e){}},500);
+    }else setVoiceStatus('Voice tracking is off.');
+  };
+  try{recognition.start()}catch(e){voiceWanted=false;setVoiceStatus('Could not start the microphone. Check browser permissions and try again.')}
+}
+function stopVoice(){
+  voiceWanted=false;clearTimeout(voiceRestartTimer);
+  try{if(recognition)recognition.stop()}catch(e){}
+  recognition=null;setVoiceStatus('Voice tracking stopped.');
+}
+function handleVoiceCommand(raw){
+  let s=raw.toLowerCase().replace(/[.,!?]/g,' ').replace(/\s+/g,' ').trim();
+  // Timer controls do not require a team name.
+  if (/\b(pause|stop)\s+(the\s+)?(match|game|timer)\b/.test(s) || /\b(pause|stop)\b/.test(s)) {
+    if (S.running && !S.paused) { pause(); setVoiceStatus('Match paused by voice command.',true); }
+    else setVoiceStatus('The match is not currently running, so it cannot be paused.',true);
+    return;
+  }
+  if (/\b(resume|continue)\s+(the\s+)?(match|game|timer)\b/.test(s) || /\b(resume|continue)\b/.test(s)) {
+    if (S.running && S.paused) { pause(); setVoiceStatus('Match resumed by voice command.',true); }
+    else if (!S.running && S.elapsed===0) { start(); setVoiceStatus('Match started by voice command.',true); }
+    else setVoiceStatus('The match cannot be resumed from its current state. Use the on-screen controls if it has finished.',true);
+    return;
+  }
+  const home=H().toLowerCase(), away=A().toLowerCase();
+  let side=null;
+  if(s.includes(home)&&home!=='home team')side='home';
+  if(s.includes(away)&&away!=='away team')side='away';
+  if(!side){
+    if(/\b(home|our team)\b/.test(s))side='home';
+    else if(/\b(away|opposition|opponent)\b/.test(s))side='away';
+  }
+  if(!side && /\b(possession|has the ball|have the ball|ball with)\b/.test(s)) {
+    if (/\b(home|our team)\b/.test(s) || (home!=='home team' && s.includes(home))) side='home';
+    else if (/\b(away|opposition|opponent)\b/.test(s) || (away!=='away team' && s.includes(away))) side='away';
+  }
+  if(!side){setVoiceStatus('Heard “'+raw+'” — include “home team” or “away team”. For possession, say “home team possession” or “away team possession”.',true);return}
+  if(!S.running){setVoiceStatus('Heard “'+raw+'” — start the match before recording stats.',true);return}
+  if (/\b(possession|has the ball|have the ball|ball with)\b/.test(s)) {
+    poss(side); setVoiceStatus('Possession recorded for '+(side==='home'?H():A())+'.',true); return;
+  }
+  let action='', id='', type='';
+  if(/\b(goal|scored|scores)\b/.test(s)){
+    const scorer=(raw.match(/\bscorer\s+(.+?)(?=\s+assist\b|$)/i)||[])[1];
+    const assist=(raw.match(/\bassist(?:ed by)?\s+(.+)$/i)||[])[1];
+    recordVoiceGoal(side,scorer?scorer.trim().replace(/[.,!?]+$/,''):'',assist?assist.trim().replace(/[.,!?]+$/,''):'');
+    setVoiceStatus('Recorded: '+(side==='home'?H():A())+' goal'+(scorer?' — '+scorer.trim():'')+(assist?' (assist '+assist.trim()+')':'')+'.',true);return;
+  }else if(/shot on target|on target/.test(s)){id=side==='home'?'soth':'sota';type='Shot on target';}
+  else if(/\bshot\b/.test(s)){id=side==='home'?'sh':'sa';type='Shot';}
+  else if(/\bcorner\b/.test(s)){id=side==='home'?'ch':'ca';type='Corner';}
+  else if(/\byellow\b/.test(s)){id=side==='home'?'yh':'ya';type='Yellow card';}
+  else if(/\bred card\b/.test(s)){id=side==='home'?'rh':'ra';type='Red card';}
+  else if(/\b(foul|fouled)\b/.test(s)){id=side==='home'?'fh':'fa';type='Foul';}
+  else {setVoiceStatus('Heard “'+raw+'” — command not recognised. Try shot, shot on target, goal, corner, foul, card, possession, pause match or resume match.',true);return}
+  S.stats[id]++;
+  if(type==='Shot on target'){S.stats[side==='home'?'sh':'sa']++}
+  log(type+' — '+(side==='home'?H():A()));update();
+  setVoiceStatus('Recorded: '+(side==='home'?H():A())+' '+type.toLowerCase()+'. Heard: “'+raw+'”',true);
+}
+function recordVoiceGoal(side,scorer,assist){
+  if(side==='home'){S.stats.gh++;S.stats.sh++;S.stats.soth++}
+  else{S.stats.ga++;S.stats.sa++;S.stats.sota++}
+  let detail=scorer||'';
+  if(assist)detail+=(detail?' — ':'')+'Assist: '+assist;
+  S.events.push({time:mt(),text:'GOAL — '+(side==='home'?H():A())+(detail?' — '+detail:''),kind:'goal',side,scorer,assist});
+  renderLog();renderGoals();update();saveNow();
+}
+
+names();renderBadges();$('badgeSettings').style.display='none';$('createShareBtn').style.display='none';restoreMatch();update();
+</script>
+<script>if("serviceWorker" in navigator){navigator.serviceWorker.register("service-worker.js").catch(()=>{})}</script>
+
+</body></html>
